@@ -35,6 +35,14 @@
 #include "Corrade/Containers/ArrayView.h"
 #include "Corrade/Utility/visibility.h"
 
+// Workaround for GCC build - Rdowell 9/18
+namespace std {
+    using ::FILE;
+    using ::snprintf;
+    using ::fprintf;
+    using ::fwrite;
+}
+
 namespace Corrade { namespace Utility {
 
 /**

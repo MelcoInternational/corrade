@@ -40,6 +40,17 @@
 #include "Corrade/Utility/Debug.h"
 #include "Corrade/Utility/Directory.h"
 
+// Workaround for GCC build - Rdowell 9/18
+namespace std
+{
+    template < typename T > std::string to_string( const T& n )
+    {
+        std::ostringstream stm ;
+        stm << n ;
+        return stm.str() ;
+    }
+}
+
 namespace Corrade { namespace Utility {
 
 struct Resource::OverrideData {
