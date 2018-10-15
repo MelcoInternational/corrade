@@ -44,14 +44,26 @@ struct StringTest: TestSuite::Tester {
     void uppercase();
 
     void beginsWith();
+    void beginsWithEmpty();
     void viewBeginsWith();
     void endsWith();
+    void endsWithEmpty();
     void viewEndsWith();
 
     void stripPrefix();
     void stripPrefixInvalid();
     void stripSuffix();
     void stripSuffixInvalid();
+
+    void replaceFirst();
+    void replaceFirstNotFound();
+    void replaceFirstEmptySearch();
+    void replaceFirstEmptyReplace();
+    void replaceAll();
+    void replaceAllNotFound();
+    void replaceAllEmptySearch();
+    void replaceAllEmptyReplace();
+    void replaceAllCycle();
 };
 
 StringTest::StringTest() {
@@ -65,14 +77,26 @@ StringTest::StringTest() {
               &StringTest::uppercase,
 
               &StringTest::beginsWith,
+              &StringTest::beginsWithEmpty,
               &StringTest::viewBeginsWith,
               &StringTest::endsWith,
+              &StringTest::endsWithEmpty,
               &StringTest::viewEndsWith,
 
               &StringTest::stripPrefix,
               &StringTest::stripPrefixInvalid,
               &StringTest::stripSuffix,
-              &StringTest::stripSuffixInvalid});
+              &StringTest::stripSuffixInvalid,
+
+              &StringTest::replaceFirst,
+              &StringTest::replaceFirstNotFound,
+              &StringTest::replaceFirstEmptySearch,
+              &StringTest::replaceFirstEmptyReplace,
+              &StringTest::replaceAll,
+              &StringTest::replaceAllNotFound,
+              &StringTest::replaceAllEmptySearch,
+              &StringTest::replaceAllEmptyReplace,
+              &StringTest::replaceAllCycle});
 }
 
 void StringTest::fromArray() {
@@ -327,6 +351,12 @@ void StringTest::beginsWith() {
     CORRADE_VERIFY(!String::beginsWith("", 'h'));
 }
 
+void StringTest::beginsWithEmpty() {
+    CORRADE_VERIFY(!String::beginsWith("", "overcomplicated"));
+    CORRADE_VERIFY(String::beginsWith("overcomplicated", ""));
+    CORRADE_VERIFY(String::beginsWith("", ""));
+}
+
 void StringTest::viewBeginsWith() {
     CORRADE_VERIFY(String::viewBeginsWith("overcomplicated", "over"));
     CORRADE_VERIFY(!String::viewBeginsWith("overcomplicated", "oven"));
@@ -348,6 +378,12 @@ void StringTest::endsWith() {
     CORRADE_VERIFY(!String::endsWith("hello", 'h'));
     CORRADE_VERIFY(String::endsWith("hello", 'o'));
     CORRADE_VERIFY(!String::endsWith("", 'h'));
+}
+
+void StringTest::endsWithEmpty() {
+    CORRADE_VERIFY(!String::beginsWith("", "overcomplicated"));
+    CORRADE_VERIFY(String::beginsWith("overcomplicated", ""));
+    CORRADE_VERIFY(String::beginsWith("", ""));
 }
 
 void StringTest::viewEndsWith() {
@@ -389,6 +425,81 @@ void StringTest::stripSuffixInvalid() {
     Error redirectOutput{&out};
     String::stripSuffix("overcomplicated", "over");
     CORRADE_COMPARE(out.str(), "Utility::String::stripSuffix(): string doesn't end with given suffix\n");
+}
+
+void StringTest::replaceFirst() {
+    CORRADE_COMPARE(String::replaceFirst(
+        "this part will get replaced and this will get not",
+        "will get", "got"),
+        "this part got replaced and this will get not");
+    CORRADE_COMPARE(String::replaceFirst(
+        "this part will get replaced and this will get not",
+        "will get", std::string{"got"}),
+        "this part got replaced and this will get not");
+    CORRADE_COMPARE(String::replaceFirst(
+        "this part will get replaced and this will get not",
+        std::string{"will get"}, "got"),
+        "this part got replaced and this will get not");
+    CORRADE_COMPARE(String::replaceFirst(
+        "this part will get replaced and this will get not",
+        std::string{"will get"}, std::string{"got"}),
+        "this part got replaced and this will get not");
+}
+
+void StringTest::replaceFirstNotFound() {
+    CORRADE_COMPARE(String::replaceFirst("this part will not get replaced",
+        "will get", "got"), "this part will not get replaced");
+}
+
+void StringTest::replaceFirstEmptySearch() {
+    CORRADE_COMPARE(String::replaceFirst("this completely messed up",
+        "", "got "), "got this completely messed up");
+}
+
+void StringTest::replaceFirstEmptyReplace() {
+    CORRADE_COMPARE(String::replaceFirst("this completely messed up",
+        "completely ", ""), "this messed up");
+}
+
+void StringTest::replaceAll() {
+    CORRADE_COMPARE(String::replaceAll(
+        "this part will get replaced and this will get replaced also",
+        "will get", "got"),
+        "this part got replaced and this got replaced also");
+    CORRADE_COMPARE(String::replaceAll(
+        "this part will get replaced and this will get replaced also",
+        "will get", std::string{"got"}),
+        "this part got replaced and this got replaced also");
+    CORRADE_COMPARE(String::replaceAll(
+        "this part will get replaced and this will get replaced also",
+        std::string{"will get"}, "got"),
+        "this part got replaced and this got replaced also");
+    CORRADE_COMPARE(String::replaceAll(
+        "this part will get replaced and this will get replaced also",
+        std::string{"will get"}, std::string{"got"}),
+        "this part got replaced and this got replaced also");
+}
+
+void StringTest::replaceAllNotFound() {
+    CORRADE_COMPARE(String::replaceAll("this part will not get replaced",
+        "will get", "got"), "this part will not get replaced");
+}
+
+void StringTest::replaceAllEmptySearch() {
+    std::ostringstream out;
+    Error redirectOutput{&out};
+    String::replaceAll("this completely messed up", "", "got ");
+    CORRADE_COMPARE(out.str(), "Utility::String::replaceAll(): empty search string would cause an infinite loop\n");
+}
+
+void StringTest::replaceAllEmptyReplace() {
+    CORRADE_COMPARE(String::replaceAll("lalalalala!",
+        "la", ""), "!");
+}
+
+void StringTest::replaceAllCycle() {
+    CORRADE_COMPARE(String::replaceAll("lalala",
+        "la", "lala"), "lalalalalala");
 }
 
 }}}

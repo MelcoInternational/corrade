@@ -109,6 +109,10 @@ void StaticArrayViewTest::construct() {
         const auto b = staticArrayView<5>(a);
         CORRADE_VERIFY((std::is_same<decltype(b), const StaticArrayView<5>>::value));
         CORRADE_VERIFY(b == a);
+
+        const auto c = staticArrayView(b);
+        CORRADE_VERIFY((std::is_same<decltype(c), const StaticArrayView<5>>::value));
+        CORRADE_VERIFY(c == a);
     }
 
     /* Implicit construction from pointer should not be allowed */
@@ -288,6 +292,11 @@ void StaticArrayViewTest::sliceToStatic() {
     CORRADE_COMPARE(b[0], 2);
     CORRADE_COMPARE(b[1], 3);
     CORRADE_COMPARE(b[2], 4);
+
+    StaticArrayView<3> c = a.prefix<3>();
+    CORRADE_COMPARE(c[0], 1);
+    CORRADE_COMPARE(c[1], 2);
+    CORRADE_COMPARE(c[2], 3);
 }
 
 void StaticArrayViewTest::cast() {

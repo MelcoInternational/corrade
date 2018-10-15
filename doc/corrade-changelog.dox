@@ -43,6 +43,8 @@ namespace Corrade {
     array view types
 -   Added @ref Containers::Optional::operator=(NullOptT) for resetting an
     optional value without requiring the type to be movable
+-   Added fixed-size @ref Containers::ArrayView::prefix() const "prefix()"
+    overload to all Array classes
 
 @subsubsection corrade-changelog-latest-new-pluginmanager PluginManager library
 
@@ -61,13 +63,23 @@ namespace Corrade {
 -   New @ref Utility::String::viewBeginsWith() and
     @ref Utility::String::viewEndsWith() utilities that take
     @ref Containers::ArrayView instead of @ref std::string as a first parameter
+-   New @ref Utility::String::replaceFirst() and
+    @ref Utility::String::replaceAll() utilities for replacing substrings
 
 @subsection corrade-changelog-latest-changes Changes and improvements
+
+@subsubsection corrade-changelog-latest-changes-containers Containers library
+
+-   It's no longer a compile error to call @ref Containers::arrayView() /
+    @ref Containers::staticArrayView() on a type that's already an
+    @ref Containers::ArrayView / @ref Containers::StaticArrayView
 
 @subsubsection corrade-changelog-latest-changes-testsuite TestSuite library
 
 -   Adapted Emscripten test runner markup for consistency with the
     [m.css](http://mcss.mosra.cz) theme used in [Magnum](http://magnum.graphics)
+-   It's now possible to have non-copyable and non-moveable
+    @ref TestSuite::Comparator specializations
 
 @subsubsection corrade-changelog-latest-changes-utility Utility library
 
@@ -77,6 +89,8 @@ namespace Corrade {
 -   @ref Utility::Arguments is now move-only to avoid accidental copies ---
     it's not meant to be used as a general storage for parsed arguments, only a
     parser
+-   @ref Utility::String::stripPrefix() and @ref Utility::String::stripSuffix()
+    have now zero-allocation implementation
 
 @subsection corrade-changelog-latest-buildsystem Build system
 
@@ -87,6 +101,11 @@ namespace Corrade {
     just this utility without anything else for example for crosscompiling, by
     enabling only `WITH_RC` and disabling all other @ref corrade-cmake "CMake"
     options.
+-   Due to changes in Xcode 10, CMake before 3.12 would fail during the build
+    of Corrade. To prevent that, when Xcode 10 is detected, the build aborts
+    with a clear message upfront, telling the user to upgrade to CMake 3.12.
+    See [mosra/corrade#52](https://github.com/mosra/corrade/issues/52) and
+    [cmake/cmake#18099](https://gitlab.kitware.com/cmake/cmake/issues/18099).
 
 @subsection corrade-changelog-latest-bugfixes Bug fixes
 
@@ -105,6 +124,9 @@ namespace Corrade {
 
 -   All code snippets are now compiled, ensuring no deprecated APIs are used
     and no accidental compile errors are present
+-   @ref TestSuite::Comparator documentation mistakenly stated that it's
+    possible to have multiple @cpp operator()() @ce overloads for a single. Due
+    to implementation limitations it's not.
 
 @section corrade-changelog-2018-04 2018.04
 

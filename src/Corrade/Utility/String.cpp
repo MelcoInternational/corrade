@@ -90,16 +90,35 @@ bool endsWith(Containers::ArrayView<const char> string, const Containers::ArrayV
     return std::strncmp(string + string.size() - suffix.size(), suffix, suffix.size()) == 0;
 }
 
-std::string stripPrefix(const std::string& string, const Containers::ArrayView<const char> prefix) {
+std::string stripPrefix(std::string string, const Containers::ArrayView<const char> prefix) {
     CORRADE_ASSERT(beginsWith({string.data(), string.size()}, prefix),
         "Utility::String::stripPrefix(): string doesn't begin with given prefix", {});
-    return string.substr(prefix.size());
+    string.erase(0, prefix.size());
+    return string;
 }
 
-std::string stripSuffix(const std::string& string, const Containers::ArrayView<const char> suffix) {
+std::string stripSuffix(std::string string, const Containers::ArrayView<const char> suffix) {
     CORRADE_ASSERT(endsWith({string.data(), string.size()}, suffix),
         "Utility::String::stripSuffix(): string doesn't end with given suffix", {});
-    return string.substr(0, string.size() - suffix.size());
+    string.erase(string.size() - suffix.size());
+    return string;
+}
+
+std::string replaceFirst(std::string string, const Containers::ArrayView<const char> search, const Containers::ArrayView<const char> replace) {
+    const std::size_t found = string.find(search, 0, search.size());
+    if(found != std::string::npos)
+        string.replace(found, search.size(), replace, replace.size());
+    return string;
+}
+
+std::string replaceAll(std::string string, const Containers::ArrayView<const char> search, const Containers::ArrayView<const char> replace) {
+    CORRADE_ASSERT(!search.empty(), "Utility::String::replaceAll(): empty search string would cause an infinite loop", {});
+    std::size_t found = 0;
+    while((found = string.find(search, found, search.size())) != std::string::npos) {
+        string.replace(found, search.size(), replace, replace.size());
+        found += replace.size();
+    }
+    return string;
 }
 
 }

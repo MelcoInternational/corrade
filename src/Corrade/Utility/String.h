@@ -71,8 +71,11 @@ namespace Implementation {
     CORRADE_UTILITY_EXPORT bool beginsWith(Containers::ArrayView<const char> string, Containers::ArrayView<const char> prefix);
     CORRADE_UTILITY_EXPORT bool endsWith(Containers::ArrayView<const char> string, Containers::ArrayView<const char> suffix);
 
-    CORRADE_UTILITY_EXPORT std::string stripPrefix(const std::string& string, Containers::ArrayView<const char> suffix);
-    CORRADE_UTILITY_EXPORT std::string stripSuffix(const std::string& string, Containers::ArrayView<const char> suffix);
+    CORRADE_UTILITY_EXPORT std::string stripPrefix(std::string string, Containers::ArrayView<const char> suffix);
+    CORRADE_UTILITY_EXPORT std::string stripSuffix(std::string string, Containers::ArrayView<const char> suffix);
+
+    CORRADE_UTILITY_EXPORT std::string replaceFirst(std::string string, Containers::ArrayView<const char> search, Containers::ArrayView<const char> replace);
+    CORRADE_UTILITY_EXPORT std::string replaceAll(std::string string, Containers::ArrayView<const char> search, Containers::ArrayView<const char> replace);
 }
 
 /**
@@ -314,7 +317,8 @@ CORRADE_UTILITY_EXPORT std::string uppercase(std::string string);
 /**
 @brief Whether the string has given prefix
 
-In particular, returns @cpp false @ce also if @p string is empty.
+In particular, returns @cpp true @ce for empty @p string only if @p prefix is
+empty as well.
 @see @ref viewBeginsWith(), @ref stripPrefix()
 */
 inline bool beginsWith(const std::string& string, const std::string& prefix) {
@@ -334,7 +338,8 @@ inline bool beginsWith(const std::string& string, char prefix) {
 /**
 @brief Whether string view has given prefix
 
-In particular, returns @cpp false @ce also if @p string is empty.
+In particular, returns @cpp true @ce for empty @p string only if @p prefix is
+empty as well.
 @see @ref beginsWith()
 */
 template<std::size_t size> inline bool viewBeginsWith(Containers::ArrayView<const char> string, const char(&prefix)[size]) {
@@ -349,7 +354,8 @@ inline bool viewBeginsWith(Containers::ArrayView<const char> string, char prefix
 /**
 @brief Whether the string has given suffix
 
-In particular, returns @cpp false @ce also if @p string is empty.
+In particular, returns @cpp true @ce for empty @p string only if @p suffix is
+empty as well.
 @see @ref viewEndsWith(), @ref stripSuffix()
 */
 inline bool endsWith(const std::string& string, const std::string& suffix) {
@@ -369,7 +375,8 @@ inline bool endsWith(const std::string& string, char suffix) {
 /**
 @brief Whether string view has given suffix
 
-In particular, returns @cpp false @ce also if @p string is empty.
+In particular, returns @cpp true @ce for empty @p string only if @p suffix is
+empty as well.
 @see @ref endsWith()
 */
 template<std::size_t size> inline bool viewEndsWith(Containers::ArrayView<const char> string, const char(&suffix)[size]) {
@@ -388,17 +395,17 @@ Expects that the string actually begins with given prefix.
 @see @ref beginsWith()
 */
 inline std::string stripPrefix(std::string string, const std::string& prefix) {
-    return Implementation::stripPrefix(string, {prefix.data(), prefix.size()});
+    return Implementation::stripPrefix(std::move(string), {prefix.data(), prefix.size()});
 }
 
 /** @overload */
-template<std::size_t size> inline std::string stripPrefix(const std::string& string, const char(&prefix)[size]) {
-    return Implementation::stripPrefix(string, {prefix, size - 1});
+template<std::size_t size> inline std::string stripPrefix(std::string string, const char(&prefix)[size]) {
+    return Implementation::stripPrefix(std::move(string), {prefix, size - 1});
 }
 
 /** @overload */
-inline std::string stripPrefix(const std::string& string, char prefix) {
-    return Implementation::stripPrefix(string, {&prefix, 1});
+inline std::string stripPrefix(std::string string, char prefix) {
+    return Implementation::stripPrefix(std::move(string), {&prefix, 1});
 }
 
 /**
@@ -407,18 +414,70 @@ inline std::string stripPrefix(const std::string& string, char prefix) {
 Expects that the string actually ends with given suffix.
 @see @ref endsWith()
 */
-inline std::string stripSuffix(const std::string& string, const std::string& suffix) {
-    return Implementation::stripSuffix(string, {suffix.data(), suffix.size()});
+inline std::string stripSuffix(std::string string, const std::string& suffix) {
+    return Implementation::stripSuffix(std::move(string), {suffix.data(), suffix.size()});
 }
 
 /** @overload */
-template<std::size_t size> inline std::string stripSuffix(const std::string& string, const char(&suffix)[size]) {
-    return Implementation::stripSuffix(string, {suffix, size - 1});
+template<std::size_t size> inline std::string stripSuffix(std::string string, const char(&suffix)[size]) {
+    return Implementation::stripSuffix(std::move(string), {suffix, size - 1});
 }
 
 /** @overload */
-inline std::string stripSuffix(const std::string& string, char suffix) {
-    return Implementation::stripSuffix(string, {&suffix, 1});
+inline std::string stripSuffix(std::string string, char suffix) {
+    return Implementation::stripSuffix(std::move(string), {&suffix, 1});
+}
+
+/**
+@brief Replace first occurence in a string
+
+Returns @p string unmodified if it doesn't contain @p search. Having empty
+@p search causes @p replace to be prepended to @p string.
+@see @ref replaceAll()
+*/
+inline std::string replaceFirst(std::string string, const std::string& search, const std::string& replace) {
+    return Implementation::replaceFirst(std::move(string), {search.data(), search.size()}, {replace.data(), replace.size()});
+}
+
+/** @overload */
+template<std::size_t searchSize, std::size_t replaceSize> inline std::string replaceFirst(std::string string, const char(&search)[searchSize], const char(&replace)[replaceSize]) {
+    return Implementation::replaceFirst(std::move(string), {search, searchSize - 1}, {replace, replaceSize - 1});
+}
+
+/** @overload */
+template<std::size_t searchSize> inline std::string replaceFirst(std::string string, const char(&search)[searchSize], const std::string& replace) {
+    return Implementation::replaceFirst(std::move(string), {search, searchSize - 1}, {replace.data(), replace.size()});
+}
+
+/** @overload */
+template<std::size_t replaceSize> inline std::string replaceFirst(std::string string, const std::string& search, const char(&replace)[replaceSize]) {
+    return Implementation::replaceFirst(std::move(string), {search.data(), search.size()}, {replace, replaceSize - 1});
+}
+
+/**
+@brief Replace all occurences in a string
+
+Returns @p string unmodified if it doesn't contain @p search. Expects that
+@p search is not empty, as that would cause an infinite loop.
+@see @ref replaceFirst()
+*/
+inline std::string replaceAll(std::string string, const std::string& search, const std::string& replace) {
+    return Implementation::replaceAll(std::move(string), {search.data(), search.size()}, {replace.data(), replace.size()});
+}
+
+/** @overload */
+template<std::size_t searchSize, std::size_t replaceSize> inline std::string replaceAll(std::string string, const char(&search)[searchSize], const char(&replace)[replaceSize]) {
+    return Implementation::replaceAll(std::move(string), {search, searchSize - 1}, {replace, replaceSize - 1});
+}
+
+/** @overload */
+template<std::size_t searchSize> inline std::string replaceAll(std::string string, const char(&search)[searchSize], const std::string& replace) {
+    return Implementation::replaceAll(std::move(string), {search, searchSize - 1}, {replace.data(), replace.size()});
+}
+
+/** @overload */
+template<std::size_t replaceSize> inline std::string replaceAll(std::string string, const std::string& search, const char(&replace)[replaceSize]) {
+    return Implementation::replaceAll(std::move(string), {search.data(), search.size()}, {replace, replaceSize - 1});
 }
 
 }}}

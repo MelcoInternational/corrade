@@ -220,6 +220,15 @@ template<class T> class ArrayView {
         ArrayView<T> prefix(std::size_t end) const { return prefix(_data + end); } /**< @overload */
 
         /**
+         * @brief Fixed-size array prefix
+         *
+         * Equivalent to @cpp data.slice<viewSize>(data.begin()) @ce.
+         */
+        template<std::size_t viewSize> StaticArrayView<viewSize, T> prefix() const {
+            return slice<viewSize>(_data);
+        }
+
+        /**
          * @brief Array suffix
          *
          * Equivalent to @cpp data.slice(begin, data.end()) @ce. If @p begin is
@@ -352,6 +361,16 @@ The following two lines are equivalent:
 */
 template<std::size_t size, class T> constexpr ArrayView<T> arrayView(StaticArrayView<size, T> view) {
     return ArrayView<T>{view};
+}
+
+/** @relatesalso ArrayView
+@brief Make view on a view
+
+Equivalent to the implicit @ref ArrayView copy constructor --- it shouldn't be
+an error to call @ref arrayView() on itself.
+*/
+template<class T> constexpr ArrayView<T> arrayView(ArrayView<T> view) {
+    return view;
 }
 
 /** @relatesalso ArrayView
@@ -546,6 +565,11 @@ template<std::size_t size_, class T> class StaticArrayView {
             return ArrayView<T>(*this).prefix(end);
         }
 
+        /** @copydoc ArrayView::prefix() const */
+        template<std::size_t viewSize> StaticArrayView<viewSize, T> prefix() const {
+            return slice<viewSize>(_data);
+        }
+
         /** @copydoc ArrayView::suffix(T*) const */
         ArrayView<T> suffix(T* begin) const {
             return ArrayView<T>(*this).suffix(begin);
@@ -581,6 +605,16 @@ The following two lines are equivalent:
 */
 template<std::size_t size, class T> constexpr StaticArrayView<size, T> staticArrayView(T(&data)[size]) {
     return StaticArrayView<size, T>{data};
+}
+
+/** @relatesalso StaticArrayView
+@brief Make view on a view
+
+Equivalent to the implicit @ref StaticArrayView copy constructor --- it
+shouldn't be an error to call @ref staticArrayView() on itself.
+*/
+template<std::size_t size, class T> constexpr StaticArrayView<size, T> staticArrayView(StaticArrayView<size, T> view) {
+    return view;
 }
 
 /** @relatesalso StaticArrayView
